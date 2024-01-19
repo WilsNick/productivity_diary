@@ -1,30 +1,32 @@
-<!-- src/components/ProjectForm.vue -->
+<!-- src/components/BookForm.vue -->
 
 <template>
   <div>
       <!-- Show existing projects dropdown only if the selected category is "passion_project" -->
-      <label for="existingProjects">Select Existing Project:</label>
-      <select id="existingProjects" v-model="selectedExistingProject">
-        <option value="" disabled>Select an existing project</option>
-        <option v-for="project in existingProjects" :key="project.id" :value="project">{{ project }}</option>
+      <label for="existingBooks">Select Existing Book:</label>
+      <select id="existingBooks" v-model="selectedExistingBook">
+        <option value="" disabled>Select an existing book</option>
+        <option v-for="book in existingBooks" :key="book.id" :value="book">{{ book }}</option>
       </select>
 
-      <label for="NewProject">New project:</label>
-      <input type="text" id="NewProject" v-model="NewProject" />
+      <label for="NewBook">New book:</label>
+      <input type="text" id="NewBook" v-model="NewBook" />
 
-      <button @click="addProject">Add project</button>
+      <button @click="addBook">Add book</button>
 
       <button @click="resetTable">Reset Table</button>
 
       <br><br>
 
-      <label for="timeSpent">Time Spent (in hours):</label>
+      <label for="timeSpent">Time Spent (in pages):</label>
       <input type="number" id="timeSpent" v-model="timeSpent" />
 
       <br><br>
-      
-      <label for="description">Description:</label>
-      <textarea id="description" v-model="description" @keydown.enter.prevent="addBulletPoint" rows="4"></textarea>
+
+      <label for="currentPage">Current page:</label>
+      <input type="number" id="currentPage" v-model="currentPage" />
+
+      <br><br>
       <button @click="submit">Submit</button>
 
       <br><br>
@@ -35,7 +37,7 @@
       <h3>All Submissions:</h3>
       <ul>
         <li v-for="submission in allSubmissions" :key="submission.id">
-          {{ submission.project_name }} - {{ submission.time_spent }} hours - {{ submission.description }} ({{ submission.submission_date }})
+          {{ submission.project_name }} - {{ submission.time_spent }} pages - current page {{ submission.current_page }} - ({{ submission.submission_date }})
         </li>
       </ul>
     </div>
@@ -49,12 +51,12 @@ import { apiService } from "@/services/apiService";
 export default {
   data() {
     return {
-      NewProject:"",
+      NewBook:"",
       timeSpent: 0,
-      existingProjects: [],
-      selectedExistingProject: "",
-      description: '\u2022 ',
-      allSubmissions: [], // Initialize allSubmissions as an empty array
+      existingBooks: [],
+      selectedExistingBook: "",
+      allSubmissions: [], 
+      currentPage:0,
 
     };
   },
@@ -62,13 +64,14 @@ export default {
     
     async submit() {
       try {
+        // console.log(this.selectedExistingBook)
         // Check if selectedExistingProject is not empty and a number
-        if (this.selectedExistingProject) {
+        if (this.selectedExistingBook) {
           const formData = {
-            category: "Projects",
-            project_name: this.selectedExistingProject,
+            category: "Books",
+            project_name: this.selectedExistingBook,
             time_spent: this.timeSpent,
-            description: this.description,
+            current_page: this.currentPage
           };
 
           // Call the API endpoint to submit the time data
@@ -78,27 +81,27 @@ export default {
 
           // Reset the form fields to their initial state
           this.timeSpent = 0;
-          this.description = '\u2022 ';
+          this.currentPage = 0;
         } else {
-          console.error('Invalid selectedExistingProject value.');
-          console.error(this.selectedExistingProject);
+          console.error('Invalid selectedExistingBook value.');
+          console.error(this.selectedExistingBook);
         }
       } catch (error) {
         console.error('Error submitting time:', error);
       }
     },
 
-    async fetchExistingProjects() {
+    async fetchExistingBooks() {
       try {
 
         // Fetch the list of existing projects from the server
-        const response = await apiService.getExistingProjects("Projects");
+        const response = await apiService.getExistingProjects("Books");
 
         // Ensure that the 'projects' property exists in the response
         if (response.projects) {
           // Extract the 'title' from each project and update the existingProjects array
-          this.existingProjects = response.projects.map(project => project.title);
-          console.log(this.existingProjects);
+          this.existingBooks = response.projects.map(book => book.title);
+          console.log(this.existingBooks);
         } else {
           console.error('Error: Unexpected response format from the server.');
         }
@@ -109,21 +112,21 @@ export default {
     },
 
 
-    async addProject() {
+    async addBook() {
       try {
         const data_form = {
-          category: "Projects",
-          title: this.NewProject
+          category: "Books",
+          title: this.NewBook
         }
         // Fetch the list of existing projects from the server
         await apiService.addProject(data_form);
 
         // Update the existingProjects array with the fetched data
-        await this.fetchExistingProjects()
-        const newIndex = this.existingProjects.indexOf(this.NewProject);
+        await this.fetchExistingBooks()
+        const newIndex = this.existingBooks.indexOf(this.NewBook);
 
         // Set selectedExistingProject to the newly added project title
-        this.selectedExistingProject = newIndex !== -1 ? this.existingProjects[newIndex] : '';
+        this.selectedExistingBook = newIndex !== -1 ? this.existingBooks[newIndex] : '';
 
         // this.selectedExistingProject = this.NewProject;
 
@@ -135,32 +138,24 @@ export default {
     async resetTable() {
         try {
             // Call the resetTable method from your apiService
-            await apiService.resetTable("Projects");
+            await apiService.resetTable("Books");
             console.log('Table reset successful');
 
             // After resetting the table, fetch the updated list of existing projects
-            this.fetchExistingProjects();
+            this.fetchExistingBooks();
         } catch (error) {
             console.error('Error resetting table:', error);
         }
     },
-    addBulletPoint() {
-      // Check if the description is empty or doesn't start with a bullet point
-      if (!this.description.trim() || !this.description.startsWith('\u2022 ')) {
-        this.description += '\u2022 '; // Add a bullet point
-      } else {
-        // Add a new line with another bullet point
-        this.description += '\n\u2022 '; // '\n' for a new line
-      }
-    },
+
     async getAllSubmissions() {
         try {
 
-          // Fetch all submissions from the server
-          const response = await apiService.getAllSubmissions("Projects");
-          console.log(response);
-          // Update the allSubmissions array with the fetched data
-          this.allSubmissions = response.submissions;
+            // Fetch all submissions from the server
+            const response = await apiService.getAllSubmissions("Books");
+
+            // Update the allSubmissions array with the fetched data
+            this.allSubmissions = response.submissions;
 
         } catch (error) {
             console.error('Error fetching all submissions:', error);
@@ -169,7 +164,7 @@ export default {
   },
   mounted() {
     // Fetch the list of existing projects when the component is mounted
-    this.fetchExistingProjects();
+    this.fetchExistingBooks();
   },
 };
 </script>

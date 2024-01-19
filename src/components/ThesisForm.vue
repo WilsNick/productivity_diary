@@ -1,18 +1,18 @@
-<!-- src/components/ProjectForm.vue -->
+<!-- src/components/ThesisForm.vue -->
 
 <template>
   <div>
       <!-- Show existing projects dropdown only if the selected category is "passion_project" -->
-      <label for="existingProjects">Select Existing Project:</label>
+      <label for="existingProjects">Select Existing component:</label>
       <select id="existingProjects" v-model="selectedExistingProject">
-        <option value="" disabled>Select an existing project</option>
+        <option value="" disabled>Select an existing component</option>
         <option v-for="project in existingProjects" :key="project.id" :value="project">{{ project }}</option>
       </select>
 
-      <label for="NewProject">New project:</label>
+      <label for="NewProject">New component:</label>
       <input type="text" id="NewProject" v-model="NewProject" />
 
-      <button @click="addProject">Add project</button>
+      <button @click="addProject">Add component</button>
 
       <button @click="resetTable">Reset Table</button>
 
@@ -55,6 +55,7 @@ export default {
       selectedExistingProject: "",
       description: '\u2022 ',
       allSubmissions: [], // Initialize allSubmissions as an empty array
+      category: "Thesis"
 
     };
   },
@@ -65,7 +66,7 @@ export default {
         // Check if selectedExistingProject is not empty and a number
         if (this.selectedExistingProject) {
           const formData = {
-            category: "Projects",
+            category: this.category,
             project_name: this.selectedExistingProject,
             time_spent: this.timeSpent,
             description: this.description,
@@ -92,7 +93,7 @@ export default {
       try {
 
         // Fetch the list of existing projects from the server
-        const response = await apiService.getExistingProjects("Projects");
+        const response = await apiService.getExistingProjects(this.category);
 
         // Ensure that the 'projects' property exists in the response
         if (response.projects) {
@@ -112,7 +113,7 @@ export default {
     async addProject() {
       try {
         const data_form = {
-          category: "Projects",
+          category: this.category,
           title: this.NewProject
         }
         // Fetch the list of existing projects from the server
@@ -157,7 +158,7 @@ export default {
         try {
 
           // Fetch all submissions from the server
-          const response = await apiService.getAllSubmissions("Projects");
+          const response = await apiService.getAllSubmissions(this.category);
           console.log(response);
           // Update the allSubmissions array with the fetched data
           this.allSubmissions = response.submissions;
