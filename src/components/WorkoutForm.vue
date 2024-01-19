@@ -2,37 +2,38 @@
 
 <template>
   <div>
-      <label for="existingExercises">Select Existing exercise:</label>
-      <select id="existingExercises" v-model="selectedExistingExercise">
-        <option value="" disabled>Select an existing exercise</option>
-        <option v-for="exercise in existingExercises" :key="exercise.id" :value="exercise">{{ exercise }}</option>
+    <div v-for="(exercise, exerciseIndex) in exercises" :key="exerciseIndex">
+      <label for="existingExercises">Select Existing component:</label>
+      <select id="existingExercises" v-model="exercise.selectedExistingExercise">
+        <option value="" disabled>Select an existing component</option>
+        <option v-for="existingExercise in existingExercises" :key="existingExercise.id" :value="existingExercise">{{ existingExercise }}</option>
       </select>
 
-      <label for="NewExercise">New exercise:</label>
-      <input type="text" id="NewExercise" v-model="NewExercise" />
+      <label :for="'newExercise' + exerciseIndex">New exercise:</label>
+      <input :type="'text'" :id="'newExercise' + exerciseIndex" v-model="exercise.newExercise" />
 
-      <button @click="addExercise">Add exercise</button>
 
-      <button @click="resetTable">Reset Table</button>
-
-      <br><br>
+      <button @click="createExercise(exerciseIndex)">Add exercise</button>
 
       <br><br>
 
       <!-- Display sets with rep and rest fields -->
-      <div v-for="(set, index) in sets" :key="index">
-        <label :for="'reps' + index">Reps:</label>
-        <input :type="'reps' + index" :id="'reps' + index" v-model="set.reps" />
+      <div v-for="(set, setIndex) in exercise.sets" :key="setIndex">
+        <label :for="'reps' + exerciseIndex + setIndex">Reps:</label>
+        <input :type="'reps' + exerciseIndex + setIndex" :id="'reps' + exerciseIndex + setIndex" v-model="set.reps" />
 
-        <label :for="'rest' + index">Rest (seconds):</label>
-        <input :type="'rest' + index" :id="'rest' + index" v-model="set.rest" />
+        <label :for="'rest' + exerciseIndex + setIndex">Rest (seconds):</label>
+        <input :type="'rest' + exerciseIndex + setIndex" :id="'rest' + exerciseIndex + setIndex" v-model="set.rest" />
 
-        <button @click="removeSet(index)">Remove Set</button>
+        <button @click="removeSet(exerciseIndex, setIndex)">Remove Set</button>
       </div>
 
-      <button @click="addSet">Add Set</button>
-      <button @click="submit">Submit</button>
+      <button @click="addSet(exerciseIndex)">Add Set</button>
 
+    </div>
+
+    <button @click="addExercise">Add exercise</button>
+    <button @click="submit">Submit</button>
       <br><br>
       <button @click="getAllSubmissions">Get All Submissions</button>
 
@@ -55,14 +56,16 @@ import { apiService } from "@/services/apiService";
 export default {
   data() {
     return {
-      NewExercise:"",
+      NewExercises:[],
       reps: 0,
       existingExercises: [],
       selectedExistingExercise: "",
       description: '\u2022 ',
       allSubmissions: [], // Initialize allSubmissions as an empty array
-      category: "Thesis",
+      category: "Projects",
       sets: [{ reps: 0, rest: 0 }], // Array to store sets with reps and rest
+      exercises: [{ selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] }],
+
 
 
     };
@@ -115,25 +118,29 @@ export default {
         console.error('Error fetching existing projects:', error);
       }
     },
+    addExercise() {
+      // Add a new exercise with default values
+      this.exercises.push({selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] });
+    },
 
-
-    async addExercise() {
+    async createExercise(exerciseIndex) {
       try {
         const data_form = {
           category: this.category,
-          title: this.NewExercise
+          title: this.exercises[exerciseIndex].newExercise
         }
+
         // Fetch the list of existing projects from the server
         await apiService.addProject(data_form);
 
         // Update the existingExercises array with the fetched data
         await this.fetchExistingExercises()
-        const newIndex = this.existingExercises.indexOf(this.NewExercise);
+        const newIndex = this.existingExercises.indexOf(this.exercises[exerciseIndex].newExercise);
 
         // Set selectedExistingExercise to the newly added project title
-        this.selectedExistingExercise = newIndex !== -1 ? this.existingExercises[newIndex] : '';
+        this.exercises[exerciseIndex].selectedExistingExercise = newIndex !== -1 ? this.existingExercises[newIndex] : '';
 
-        // this.selectedExistingExercise = this.NewExercise;
+        // this.selectedExistingExercise = this.newExercise;
 
       } catch (error) {
         console.error('Error fetching existing projects:', error);
@@ -165,13 +172,14 @@ export default {
             console.error('Error fetching all submissions:', error);
         }
     },
-    addSet() {
-      // Add a new set with default values for reps and rest
-      this.sets.push({ reps: 0, rest: 0 });
+    addSet(exerciseIndex) {
+      // Add a new set to the specified exercise
+      this.exercises[exerciseIndex].sets.push({ reps: 0, rest: 0 });
     },
-    removeSet(index) {
-      // Remove the set at the specified index
-      this.sets.splice(index, 1);
+
+    removeSet(exerciseIndex, setIndex) {
+      // Remove the set at the specified index from the specified exercise
+      this.exercises[exerciseIndex].sets.splice(setIndex, 1);
     },
   },
   mounted() {
