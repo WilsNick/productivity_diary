@@ -22,10 +22,10 @@
 </template>
 
 <script>
-import ProjectForm from "./ProjectForm.vue";
-import BookForm from "./BookForm.vue";
-import ThesisForm from "./ThesisForm.vue";
-import WorkoutForm from "./WorkoutForm.vue";
+import ProjectForm from "./Forms/ProjectForm.vue";
+import BookForm from "./Forms/BookForm.vue";
+import ThesisForm from "./Forms/ThesisForm.vue";
+import WorkoutForm from "./Forms/WorkoutForm.vue";
 
 export default {
     data() {

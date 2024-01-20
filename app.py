@@ -10,6 +10,27 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://nick:nick@localhost:5432/diary'
 db = SQLAlchemy(app)
 
+class Exercise(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), unique=True ,nullable=False)
+    best_rep = db.Column(db.Integer, default=0)
+    last_rep = db.Column(db.Integer, default=0)
+    last_rest = db.Column(db.Integer, default=0)
+    sets = db.relationship('Set', backref='exercise', lazy=True)
+
+class TimeSubmissionWorkout(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    submission_date = db.Column(db.DateTime, default=datetime.utcnow)
+    sets = db.relationship('Set', backref='workout', lazy=True)
+
+class Set(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    reps = db.Column(db.Integer, nullable=False)
+    rest = db.Column(db.Integer, nullable=False)
+    exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'), nullable=False)
+    workout_id = db.Column(db.Integer, db.ForeignKey('time_submission_workout.id'), nullable=False)
+
+
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), unique=True, nullable=False)
@@ -86,6 +107,16 @@ def add_project():
                 return jsonify({'message': 'Project added successfully!'})
             else:
                 return jsonify({'message': 'Project already exists!'})
+        elif category == "Workouts":
+            existing_project = Exercise.query.filter_by(title=project_title).first()
+
+            if existing_project not in [None or "" or " "]:
+                new_project = Exercise(title=project_title)
+                db.session.add(new_project)
+                db.session.commit()
+                return jsonify({'message': 'Project added successfully!'})
+            else:
+                return jsonify({'message': 'Project already exists!'})
 
     except Exception as e:
         print("Error:", str(e))
@@ -105,6 +136,10 @@ def get_existing_projects():
         elif category == "Books":
             books = Books.query.all()
             project_list = [{'id': book.id, 'title': book.title} for book in books]
+        elif category == "Workouts":
+            exercises = Exercise.query.all()
+            project_list = [{'id': exercise.id, 'title': exercise.title} for exercise in exercises]
+
         return jsonify({'projects': project_list})
 
     except Exception as e:
@@ -127,6 +162,11 @@ def reset_table():
             # Delete all books in the table
             TimeSubmissionBook.query.delete()
             Books.query.delete()
+        elif category == "Workouts":
+            # Delete all books in the table
+            Set.query.delete()
+            TimeSubmissionWorkout.query.delete()
+            Exercise.query.delete()
 
         db.session.commit()
 
@@ -143,16 +183,18 @@ def submit_time():
 
         category = data.get('category')
 
-        project_name = data.get('project_name')
-        time_spent = data.get('time_spent')
 
         if category == "Projects":
             description = data.get('description')
+            project_name = data.get('project_name')
+            time_spent = data.get('time_spent')
 
             # Create a new TimeSubmission object and add it to the database
             new_time_submission = TimeSubmissionProject(project_name=project_name, time_spent=time_spent, description=description)
         elif category == "Thesis":
             description = data.get('description')
+            project_name = data.get('project_name')
+            time_spent = data.get('time_spent')
 
             # Create a new TimeSubmission object and add it to the database
             new_time_submission = TimeSubmissionThesis(project_name=project_name, time_spent=time_spent,
@@ -161,7 +203,31 @@ def submit_time():
         elif category == "Books":
 
             current_page = data.get('current_page')
+            project_name = data.get('project_name')
+            time_spent = data.get('time_spent')
             new_time_submission = TimeSubmissionBook(book_name = project_name, time_spent=time_spent, current_page=current_page)
+        elif category == "Workouts":
+            exercises = data.get('exercises')
+            with db.session.no_autoflush:
+
+                new_time_submission = TimeSubmissionWorkout()
+                db.session.add(new_time_submission)
+
+                for exercise_data in exercises:
+                    exercise_name = exercise_data.get('selectedExistingExercise')
+                    exercise = Exercise.query.filter_by(title=exercise_name).first()
+
+                    if exercise:
+                        for set_data in exercise_data.get('sets', []):
+                            new_set = Set(reps=set_data.get('reps'), rest=set_data.get('rest'), exercise=exercise,
+                                          workout=new_time_submission)
+                            db.session.add(new_set)
+
+                            exercise.best_rep = max(exercise.best_rep, int(set_data.get('reps')))
+                            exercise.last_rep = set_data.get('reps')
+                            exercise.last_rest = set_data.get('rest')
+
+
         db.session.add(new_time_submission)
         db.session.commit()
 
@@ -218,6 +284,32 @@ def get_all_submissions():
                     'current_page': submission.current_page,
                 }
                 submission_list.append(submission_data)
+        elif category == "Workouts":
+
+            # Query all records from TimeSubmissionWorkout table
+            workouts = TimeSubmissionWorkout.query.order_by(TimeSubmissionWorkout.submission_date.desc()).all()
+
+            submission_list = []
+            for workout in workouts:
+                workout_data = {
+                    'submission_date': workout.submission_date,
+                    'exercises': [],
+                }
+
+                # Fetch only the sets associated with the current workout
+                for set in workout.sets:
+                    exercise_data = {
+                        'exercise_name': set.exercise.title,
+                        'sets': [
+                            {'reps': s.reps, 'rest': s.rest}
+                            for s in workout.sets  # Only include sets from the current workout
+                        ],
+                    }
+                    workout_data['exercises'].append(exercise_data)
+
+                submission_list.append(workout_data)
+
+
 
         return jsonify({'submissions': submission_list})
 

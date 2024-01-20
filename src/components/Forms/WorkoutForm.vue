@@ -34,6 +34,8 @@
 
     <button @click="addExercise">Add exercise</button>
     <button @click="submit">Submit</button>
+    <button @click="resetTable">Reset Table</button>
+
       <br><br>
       <button @click="getAllSubmissions">Get All Submissions</button>
 
@@ -41,8 +43,18 @@
     <div v-if="allSubmissions && allSubmissions.length > 0">
       <h3>All Submissions:</h3>
       <ul>
-        <li v-for="submission in allSubmissions" :key="submission.id">
-          {{ submission.project_name }} - {{ submission.reps }} reps - {{ submission.description }} ({{ submission.submission_date }})
+        <li v-for="workout in allSubmissions" :key="workout.submission_date">
+          <strong>Submission Date:</strong> {{ workout.submission_date }}
+          <ul>
+            <li v-for="exercise in workout.exercises" :key="exercise.exercise_name">
+              <strong>Exercise:</strong> {{ exercise.exercise_name }}
+              <ul>
+                <li v-for="set in exercise.sets" :key="set.reps">
+                  Reps: {{ set.reps }}, Rest: {{ set.rest }}
+                </li>
+              </ul>
+            </li>
+          </ul>
         </li>
       </ul>
     </div>
@@ -57,13 +69,10 @@ export default {
   data() {
     return {
       NewExercises:[],
-      reps: 0,
       existingExercises: [],
       selectedExistingExercise: "",
-      description: '\u2022 ',
       allSubmissions: [], // Initialize allSubmissions as an empty array
-      category: "Projects",
-      sets: [{ reps: 0, rest: 0 }], // Array to store sets with reps and rest
+      category: "Workouts",
       exercises: [{ selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] }],
 
 
@@ -74,22 +83,25 @@ export default {
     
     async submit() {
       try {
+        let can_send = true;
         // Check if selectedExistingExercise is not empty and a number
-        if (this.selectedExistingExercise) {
+        for (const exercise of this.exercises) {
+          console.log(exercise);
+          if(!exercise.selectedExistingExercise){
+            can_send = false;
+          }
+        } 
+        if (can_send) {
           const formData = {
             category: this.category,
-            project_name: this.selectedExistingExercise,
-            time_spent: this.reps,
+            exercises: this.exercises,
           };
 
           // Call the API endpoint to submit the time data
           const response = await apiService.submitTime(formData);
 
           console.log('Response from server:', response);
-
-          // Reset the form fields to their initial state
-          this.reps = 0;
-          this.description = '\u2022 ';
+              this.exercises = [{ selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] }];
         } else {
           console.error('Invalid selectedExistingExercise value.');
           console.error(this.selectedExistingExercise);
@@ -150,7 +162,7 @@ export default {
     async resetTable() {
         try {
             // Call the resetTable method from your apiService
-            await apiService.resetTable("Projects");
+            await apiService.resetTable(this.category);
             console.log('Table reset successful');
 
             // After resetting the table, fetch the updated list of existing projects
