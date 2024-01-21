@@ -1,46 +1,53 @@
 <!-- src/components/WorkoutForm.vue -->
 
 <template>
-  <div>
-    <div v-for="(exercise, exerciseIndex) in exercises" :key="exerciseIndex">
-      <label for="existingExercises">Select Existing component:</label>
-      <select id="existingExercises" v-model="exercise.selectedExistingExercise">
-        <option value="" disabled>Select an existing component</option>
-        <option v-for="existingExercise in existingExercises" :key="existingExercise.id" :value="existingExercise">{{ existingExercise }}</option>
-      </select>
-
-      <label :for="'newExercise' + exerciseIndex">New exercise:</label>
-      <input :type="'text'" :id="'newExercise' + exerciseIndex" v-model="exercise.newExercise" />
-
-
-      <button @click="createExercise(exerciseIndex)">Add exercise</button>
-
-      <br><br>
-
-      <!-- Display sets with rep and rest fields -->
-      <div v-for="(set, setIndex) in exercise.sets" :key="setIndex">
-        <label :for="'reps' + exerciseIndex + setIndex">Reps:</label>
-        <input :type="'reps' + exerciseIndex + setIndex" :id="'reps' + exerciseIndex + setIndex" v-model="set.reps" />
-
-        <label :for="'rest' + exerciseIndex + setIndex">Rest (seconds):</label>
-        <input :type="'rest' + exerciseIndex + setIndex" :id="'rest' + exerciseIndex + setIndex" v-model="set.rest" />
-
-        <button @click="removeSet(exerciseIndex, setIndex)">Remove Set</button>
+  <div class="workout-form">
+    <div v-for="(exercise, exerciseIndex) in exercises" :key="exerciseIndex" class="exercise-container">
+      <div class="form-section">
+        <label for="existingExercises">Select Existing Exercise:</label>
+        <select id="existingExercises" v-model="exercise.selectedExistingExercise">
+          <option value="" disabled>Select an existing exercise</option>
+          <option v-for="existingExercise in existingExercises" :key="existingExercise.id" :value="existingExercise">{{ existingExercise }}</option>
+        </select>
       </div>
 
-      <button @click="addSet(exerciseIndex)">Add Set</button>
+      <div class="form-section">
+        <label :for="'newExercise' + exerciseIndex">New Exercise:</label>
+        <div class="new-exercise-row">
+          <input :type="'text'" :id="'newExercise' + exerciseIndex" v-model="exercise.newExercise" class="large-input" />
+          <button @click="createExercise(exerciseIndex)" class="small-btn">Add Exercise</button>
+        </div>
+      </div>
 
+      <div class="form-section">
+        <label>Sets:</label>
+        <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="set-container">
+          <div class="set-input">
+            <label :for="'reps' + exerciseIndex + setIndex">Reps:</label>
+            <input :type="'reps' + exerciseIndex + setIndex" :id="'reps' + exerciseIndex + setIndex" v-model="set.reps" class="small-input" />
+          </div>
+          <div class="set-input">
+            <label :for="'rest' + exerciseIndex + setIndex">Rest (seconds):</label>
+            <input :type="'rest' + exerciseIndex + setIndex" :id="'rest' + exerciseIndex + setIndex" v-model="set.rest" class="small-input" />
+          </div>
+          <button @click="removeSet(exerciseIndex, setIndex)" class="remove-set-btn">Remove Set</button>
+        </div>
+      </div>
+
+      <button @click="addSet(exerciseIndex)" class="add-set-btn">Add Set</button>
     </div>
 
-    <button @click="addExercise">Add exercise</button>
-    <button @click="submit">Submit</button>
-    <button @click="resetTable">Reset Table</button>
+    <div class="form-section">
+      <button @click="addExercise" class="add-exercise-btn">Add Exercise</button>
+      <button @click="submit" class="submit-btn">Submit</button>
+      <button @click="resetTable" class="reset-table-btn">Reset Table</button>
+    </div>
 
-      <br><br>
-      <button @click="getAllSubmissions">Get All Submissions</button>
+    <div class="form-section" style="text-align: center; margin-top: 1rem;">
+      <button @click="getAllSubmissions" class="get-submissions-btn">Get All Submissions</button>
+    </div>
 
-    <!-- Display the fetched submissions -->
-    <div v-if="allSubmissions && allSubmissions.length > 0">
+    <div v-if="allSubmissions && allSubmissions.length > 0" class="form-section">
       <h3>All Submissions:</h3>
       <ul>
         <li v-for="workout in allSubmissions" :key="workout.submission_date">
@@ -59,7 +66,6 @@
       </ul>
     </div>
   </div>
-
 </template>
 
 <script>
@@ -201,6 +207,129 @@ export default {
 };
 </script>
 
+
+
+
 <style scoped>
-/* Add some styling if desired */
+.workout-form {
+  max-width: 800px;
+  margin: auto;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-container {
+  margin-bottom: 1.5rem;
+}
+
+.set-container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  font-weight: bold;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+  background-color: #007bff; /* Matching header color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.small-input {
+  width: 40%;
+}
+
+.large-input {
+  width: 60%;
+}
+.new-exercise-row {
+  display: flex;
+  gap: 0.5rem; /* Adjust the gap as needed */
+}
+
+.new-exercise-row input {
+  flex: 1;
+}
+
+.small-btn {
+  width: 30%; /* Adjust the width as needed */
+}
+
+.add-set-btn,
+.remove-set-btn {
+  width: 30%;
+}
+
+.add-exercise-btn,
+.submit-btn,
+.reset-table-btn,
+.get-submissions-btn {
+  width: 32%;
+  margin: 0.5%;
+  display: inline-block;
+}
+
+.add-exercise-btn,
+.submit-btn,
+.reset-table-btn,
+.get-submissions-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+.small-btn,
+.large-btn,
+.submit-btn,
+.reset-table-btn,
+.remove-set-btn,
+.add-set-btn,
+.add-exercise-btn,
+.get-submissions-btn {
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.small-btn:hover,
+.large-btn:hover,
+.submit-btn:hover,
+.reset-table-btn:hover,
+.remove-set-btn:hover,
+.add-set-btn:hover,
+.add-exercise-btn:hover,
+
+.get-submissions-btn:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+.reset-table-btn {
+  background-color: #dc3545;
+}
 </style>

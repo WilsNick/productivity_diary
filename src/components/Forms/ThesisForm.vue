@@ -1,37 +1,48 @@
 <!-- src/components/ThesisForm.vue -->
 
 <template>
-  <div>
-      <!-- Show existing projects dropdown only if the selected category is "passion_project" -->
-      <label for="existingProjects">Select Existing component:</label>
-      <select id="existingProjects" v-model="selectedExistingProject">
-        <option value="" disabled>Select an existing component</option>
-        <option v-for="project in existingProjects" :key="project.id" :value="project">{{ project }}</option>
-      </select>
+  <div class="thesis-form">
+    <div class="form-row">
+      <div class="form-column">
+        <label for="existingProjects">Select Existing Component:</label>
+        <select id="existingProjects" v-model="selectedExistingProject">
+          <option value="" disabled>Select an existing component</option>
+          <option v-for="project in existingProjects" :key="project.id" :value="project">{{ project }}</option>
+        </select>
+      </div>
+      <div class="form-column">
+        <label for="newProject">New Component:</label>
+        <div class="new-project-row">
+          <input type="text" id="newProject" v-model="newProject" class="large-input" />
+          <button @click="addProject" class="small-btn">Add Component</button>
+        </div>
+      </div>
+    </div>
 
-      <label for="NewProject">New component:</label>
-      <input type="text" id="NewProject" v-model="NewProject" />
-
-      <button @click="addProject">Add component</button>
-
-      <button @click="resetTable">Reset Table</button>
-
-      <br><br>
-
+    <div class="form-section">
       <label for="timeSpent">Time Spent (in hours):</label>
-      <input type="number" id="timeSpent" v-model="timeSpent" />
+      <div class="input-section">
+        <input type="number" id="timeSpent" v-model="timeSpent" class="small-input" />
+      </div>
+    </div>
 
-      <br><br>
-      
+    <div class="form-section">
       <label for="description">Description:</label>
-      <textarea id="description" v-model="description" @keydown.enter.prevent="addBulletPoint" rows="4"></textarea>
-      <button @click="submit">Submit</button>
+      <div class="input-section">
+        <textarea id="description" v-model="description" @keydown.enter.prevent="addBulletPoint" rows="4" class="description-input"></textarea>
+      </div>
+    </div>
 
-      <br><br>
-      <button @click="getAllSubmissions">Get All Submissions</button>
+    <div class="form-section" style="text-align: center;">
+      <button @click="submit" class="submit-btn">Submit</button>
+      <button @click="resetTable" class="reset-table-btn">Reset Table</button>
+    </div>
 
-    <!-- Display the fetched submissions -->
-    <div v-if="allSubmissions && allSubmissions.length > 0">
+    <div class="form-section" style="text-align: center; margin-top: 1rem;">
+      <button @click="getAllSubmissions" class="get-submissions-btn">Get All Submissions</button>
+    </div>
+
+    <div v-if="allSubmissions && allSubmissions.length > 0" class="form-section">
       <h3>All Submissions:</h3>
       <ul>
         <li v-for="submission in allSubmissions" :key="submission.id">
@@ -40,8 +51,8 @@
       </ul>
     </div>
   </div>
-
 </template>
+
 
 <script>
 import { apiService } from "@/services/apiService";
@@ -175,6 +186,114 @@ export default {
 };
 </script>
 
+
 <style scoped>
-/* Add some styling if desired */
+.thesis-form {
+  max-width: 800px;
+  margin: auto;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-column {
+  flex: 1 1 100%;
+  max-width: calc(50% - 0.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.new-project-row {
+  display: flex;
+  gap: .5rem;
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.input-section {
+  margin-top: 1rem;
+}
+
+label {
+  font-weight: bold;
+}
+
+input,
+select,
+button,
+textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+  background-color: #007bff; /* Matching header color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.small-input {
+  width: 50%;
+}
+
+.large-input {
+  width: 75%;
+}
+
+.description-input {
+  width: calc(100% - 2rem); /* Adjusted width to prevent overflow */
+}
+
+.small-btn {
+  width: 40%;
+}
+
+.submit-btn,
+.get-submissions-btn,
+.reset-table-btn {
+  width: 48%;
+  margin: 0.5%;
+  display: inline-block;
+}
+
+.submit-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.reset-table-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.get-submissions-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.reset-table-btn:hover,
+.small-btn:hover,
+.submit-btn:hover,
+.get-submissions-btn:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+
+}
 </style>
