@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from datetime import datetime
+from sqlalchemy import func
 
 
 app = Flask(__name__)
@@ -34,8 +35,15 @@ class Set(db.Model):
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), unique=True, nullable=False)
+    description = db.Column(db.Text)
+    total_time_spent = db.Column(db.Integer, default=0)
+    todos = db.relationship('Todo', backref='project', lazy=True)
 
-
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(50), default='Todo')  # 'Todo', 'In Progress', 'Done'
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
 class Thesis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), unique=True, nullable=False)
@@ -47,7 +55,7 @@ class Books(db.Model):
 
 class TimeSubmissionProject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    project_name = db.Column(db.String(255), db.ForeignKey('project.title'), nullable=False)
+    project_name = db.Column(db.String(255), db.ForeignKey('project.title',  onupdate='CASCADE'), nullable=False)
     time_spent = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=False)
     submission_date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -153,6 +161,7 @@ def reset_table():
         if category == "Projects":
             # Delete all projects in the table
             TimeSubmissionProject.query.delete()
+            Todo.query.delete()
             Project.query.delete()
         elif category == "Thesis":
             # Delete all projects in the table
@@ -317,5 +326,137 @@ def get_all_submissions():
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
 
+@app.route('/update-project', methods=['PUT'])
+def update_project():
+    try:
+        data = request.get_json()
+        project_id = data.get('id')
+        title = data.get('title')
+        description = data.get('description')
+
+
+        project = Project.query.get(project_id)
+        project.title = title
+        project.description = description
+        with db.session.no_autoflush:
+
+            # Update references in TimeSubmissionProject
+            time_submissions = TimeSubmissionProject.query.filter_by(project_name=project.title).all()
+            for submission in time_submissions:
+                submission.project_name = title
+            db.session.commit()
+        return jsonify({'message': 'Project updated successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/update-todo', methods=['PUT'])
+def update_todo():
+    try:
+
+        data = request.get_json()
+        items = data.get('items')
+        project_id = data.get('project_id')
+        #remove all the todos linked with the project id
+
+        Todo.query.filter_by(project_id=project_id).delete()
+        db.session.commit()
+
+        for item in items:
+            task = item.get('task')
+            status = item.get('status')
+            project_id = item.get('project_id')
+
+            todo = Todo(task=task, status=status, project_id=project_id)
+            db.session.add(todo)
+
+        db.session.commit()
+
+        return jsonify({'message': 'Todo updated successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/update-single-todo', methods=['PUT'])
+def update_single_todo():
+    try:
+
+        data = request.get_json()
+        print(data)
+        task = data.get('task')
+        id = data.get('id')
+        todo = Todo.query.get(id)
+
+        todo.task = task
+
+        db.session.commit()
+
+        return jsonify({'message': 'Todo updated successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/add-todo', methods=['POST'])
+def add_todo():
+    try:
+        data = request.get_json()
+        task = data.get('task')
+        status = data.get('status')
+        project_id = data.get('project_id')
+
+        todo = Todo(task=task, status=status, project_id=project_id)
+        db.session.add(todo)
+        db.session.commit()
+
+
+        return jsonify({'item': todo.id,
+                         "project_id": project_id,
+                        "status": status,
+                        "task": task})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+@app.route('/get-project-info', methods=['GET'])
+def get_project_info():
+    try:
+        project = request.args.get('projectId')
+        # get description
+
+
+        project_inst = Project.query.get(project)
+        desc = project_inst.description
+        todos = project_inst.todos
+        title = project_inst.title
+        todo_list = []
+        for todo in todos:
+            todo_form = {
+                'id': todo.id,
+                "project_id": todo.project_id,
+                "status": todo.status,
+                "task": todo.task}
+            todo_list.append(todo_form)
+        form = {
+            "description": desc,
+            "todos": todo_list,
+            "title": title
+        }
+        return jsonify({'project': form})
+
+    except Exception as e:
+        print("Error:", str(e))
+        return jsonify({'error': str(e)}), 500
+
+# API endpoint to get the sum of time_spent for a given project_title
+@app.route('/sum_time_spent', methods=['GET'])
+def get_sum_time_spent():
+    try:
+        project_title = request.args.get('project_title')
+
+        # Query the TimeSubmissionProject table for entries with the given project_title
+        total_time_spent = db.session.query(func.sum(TimeSubmissionProject.time_spent)).filter_by(project_name=project_title).scalar()
+        print(total_time_spent)
+        # Return the result
+        return jsonify({'total_time_spent': total_time_spent})
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, )

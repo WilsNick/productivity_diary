@@ -60,7 +60,7 @@ import { apiService } from "@/services/apiService";
 export default {
   data() {
     return {
-      NewProject:"",
+      newProject:"",
       timeSpent: 0,
       existingProjects: [],
       selectedExistingProject: "",
@@ -124,19 +124,20 @@ export default {
       try {
         const data_form = {
           category: "Projects",
-          title: this.NewProject
+          title: this.newProject
         }
-        // Fetch the list of existing projects from the server
-        await apiService.addProject(data_form);
+        if(this.newProject){
+          // Fetch the list of existing projects from the server
+          await apiService.addProject(data_form);
 
-        // Update the existingProjects array with the fetched data
-        await this.fetchExistingProjects()
-        const newIndex = this.existingProjects.indexOf(this.NewProject);
+          // Update the existingProjects array with the fetched data
+          await this.fetchExistingProjects()
+          const newIndex = this.existingProjects.indexOf(this.newProject);
 
-        // Set selectedExistingProject to the newly added project title
-        this.selectedExistingProject = newIndex !== -1 ? this.existingProjects[newIndex] : '';
-
-        // this.selectedExistingProject = this.NewProject;
+          // Set selectedExistingProject to the newly added project title
+          this.selectedExistingProject = newIndex !== -1 ? this.existingProjects[newIndex] : '';
+        }
+        // this.selectedExistingProject = this.newProject;
 
       } catch (error) {
         console.error('Error fetching existing projects:', error);
