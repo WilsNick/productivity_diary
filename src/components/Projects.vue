@@ -185,7 +185,7 @@ export default {
         id: null,
         title: '',
         todos: {
-          todo: [{ id: 1, name: "iiiiiiih" }],
+          todo: [{ id: 1, name: "placeholder" }],
           inProgress: [],
           done: [],
         },
