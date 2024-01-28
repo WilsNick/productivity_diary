@@ -89,6 +89,4 @@ select {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
-/* Add more styles as needed */
 </style>

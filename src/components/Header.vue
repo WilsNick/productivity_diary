@@ -28,7 +28,8 @@ export default {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #ffffff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 0 0 8px 8px; /* Adjust border-radius as needed */
+  border-radius: 0 0 8px 8px;
+  /* Adjust border-radius as needed */
 }
 
 .brand {
@@ -62,7 +63,7 @@ export default {
 }
 </style>
 
-
+<!-- Darker Theme -->
 <!-- 
 <style scoped>
   .app-header {

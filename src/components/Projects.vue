@@ -30,7 +30,7 @@
         <p>
           <strong>Description:</strong><br />
           <span v-if="!isEditing">{{ selectedProject.description }}</span>
-          <textarea v-if="isEditing" v-model="editedProject.description"   class="edit-desc-input"></textarea>
+          <textarea v-if="isEditing" v-model="editedProject.description" class="edit-desc-input"></textarea>
         </p>
         <p :class="{ 'editing': isEditing }"><strong>Total Hours Spent:</strong>
           <br />{{ selectedProject.totalTimeSpent || 0 }} hours
@@ -70,7 +70,7 @@
             <button @click="startAddingItem(list1)" class="btn">Add Item</button>
             <div v-if="addingItem === list1">
               <input ref="newItemInput" v-model="newItemTitle" @keyup.enter="addItemToList(list1)" />
-              <button @click="addItemToList(list1)"   class="btn">Done</button>
+              <button @click="addItemToList(list1)" class="btn">Done</button>
             </div>
           </div>
 
@@ -129,17 +129,17 @@
 
 
         <div class="col-4" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
-            <h3 style="color: red;">Remove todos</h3>
-            <draggable class="list-group" :list="list4" group="people" @change="handleChange" itemKey="task">
-              <template #item="{ element, index }">
-                <div class="list-group-item">
-                  <span v-if="!editingItem || (editingItem.list !== list4 || editingItem.index !== index)">
-                    {{ element.task }}
-                  </span>
+          <h3 style="color: red;">Remove todos</h3>
+          <draggable class="list-group" :list="list4" group="people" @change="handleChange" itemKey="task">
+            <template #item="{ element, index }">
+              <div class="list-group-item">
+                <span v-if="!editingItem || (editingItem.list !== list4 || editingItem.index !== index)">
+                  {{ element.task }}
+                </span>
 
-                </div>
-              </template>
-            </draggable>
+              </div>
+            </template>
+          </draggable>
         </div>
 
 
@@ -172,7 +172,7 @@
 
 
 <script>
-import { apiService } from "@/services/apiService";
+import { projectsPageMethods } from "./ProjectsPageMethods";
 import draggable from 'vuedraggable';
 import ProjectForm from "./Forms/ProjectForm.vue";
 
@@ -214,197 +214,7 @@ export default {
       allSubmissions: [], // Initialize allSubmissions as an empty array
     };
   },
-  methods: {
-
-    async handleChange(event) {
-      console.log('Column changed:', event);
-
-      if (event.added || event.moved) {
-        for (const item of this.list1) {
-          item.status = "Todo"
-        }
-        for (const item of this.list2) {
-          item.status = "In Progress"
-        }
-        for (const item of this.list3) {
-          item.status = "Done"
-        }
-        let combinedList = this.list1;
-        combinedList = combinedList.concat(this.list2, this.list3);
-        console.log(combinedList);
-        const form = {
-          items: combinedList,
-          project_id: this.selectedProject.id,
-        }
-        await apiService.updateTodo(form);
-        await this.selectProject(this.selectedProject.id);
-      }
-
-
-    },
-
-
-    async getAllSubmissions() {
-      try {
-
-        // Fetch all submissions from the server
-        const response = await apiService.getAllSubmissions("Projects");
-        console.log(response);
-        // Update the allSubmissions array with the fetched data
-        this.allSubmissions = response.submissions;
-
-      } catch (error) {
-        console.error('Error fetching all submissions:', error);
-      }
-    },
-    async fetchExistingProjects() {
-      try {
-        const response = await apiService.getExistingProjects("Projects");
-        if (response.projects) {
-          this.existingProjects = response.projects;
-        } else {
-          console.error('Error: Unexpected response format from the server.');
-        }
-      } catch (error) {
-        console.error('Error fetching existing projects:', error);
-      }
-    },
-    toggleProjectForm() {
-      this.showProjects = !this.showProjects;
-    },
-
-
-    async selectProject(project) {
-      this.selectedProject.id = project;
-      try {
-
-        const response = await apiService.getProjectInfo(project);
-        if (response.project) {
-          let project = response.project
-          this.selectedProject.description = project.description;
-          console.log(project)
-          this.selectedProject.title = project.title;
-          let todos = project.todos;
-          this.list1 = [];
-          this.list2 = [];
-          this.list3 = [];
-          this.list4 = [];
-          for (const todo of todos) {
-            if (todo.status === "Todo" && !this.list1.some(item => item.id === todo.id)) {
-              this.list1.push(todo);
-            } else if (todo.status === "In Progress" && !this.list2.some(item => item.id === todo.id)) {
-              this.list2.push(todo);
-            } else if (todo.status === "Done" && !this.list3.some(item => item.id === todo.id)) {
-              this.list3.push(todo);
-            }
-          }
-
-          const response2 = await apiService.getTimeSpent(project.title);
-          console.log(response2);
-          this.selectedProject.totalTimeSpent = response2.total_time_spent;
-
-        } else {
-          console.error('Error: Unexpected response format from the server.');
-        }
-      } catch (error) {
-        console.error('Error fetching existing projects:', error);
-      }
-
-    },
-    toggleEditing() {
-      if (this.isEditing) {
-        // If in editing mode, save the changes directly
-        this.saveProject();
-      } else {
-        // If not in editing mode, start editing
-        this.editedProject = {
-          id: this.selectedProject.id,
-          title: this.selectedProject.title,
-          description: this.selectedProject.description,
-        };
-      }
-      // Toggle the editing mode
-      this.isEditing = !this.isEditing;
-    },
-    cancelEditing() {
-      this.editedProject = {};
-      this.isEditing = false;
-    },
-    async saveProject() {
-      try {
-        const response = await apiService.updateProject(this.editedProject);
-        console.log('Response from server:', response);
-        await this.fetchExistingProjects();
-
-        await this.selectProject(this.editedProject.id);
-        this.isEditing = false;
-        this.editedProject = {
-          id: null,
-          title: '',
-          description: '',
-        };
-      } catch (error) {
-        console.error('Error updating project:', error);
-      }
-    },
-    startAddingItem(list) {
-      this.addingItem = list;
-      this.newItemTitle = '';
-      this.$nextTick(() => this.$refs.newItemInput.focus());
-    },
-
-    async addItemToList(list) {
-      if (this.newItemTitle.trim() !== '') {
-        console.log(list);
-        let status = ""
-        if (list === this.list1) {
-          status = "Todo"
-        } else if (list === this.list2) {
-          status = "In Progress"
-        } else if (list === this.list3) {
-          status = "Done"
-        }
-        const newItem = {
-          project_id: this.selectedProject.id,
-          status: status,
-          task: this.newItemTitle.trim(),
-        };
-        const response = await apiService.addTodo(newItem);
-
-        list.push(response);
-        console.log(response)
-        await this.selectProject(this.selectedProject.id);
-        
-      }
-      this.addingItem = null;
-      this.newItemTitle = '';
-    },
-    startEditingItem(list, index) {
-      this.editingItem = { list, index };
-      this.editedItemTitle = list[index].task;
-      this.$nextTick(() => this.$refs.editItemInput && this.$refs.editItemInput.focus());
-    },
-
-    async saveEditedItem() {
-
-      console.log('Column changed:', this.list1);
-      console.log('Column changed:', this.list2);
-      console.log('Column changed:', this.list3);
-      console.log('Column changed:', this.editedItemTitle);
-      console.log("tester", this.editingItem);
-      if (this.editedItemTitle.trim() !== '') {
-        console.log("GOT IN");
-        this.editingItem.list[this.editingItem.index].task = this.editedItemTitle;
-        console.log(this.editingItem.list[this.editingItem.index])
-        await apiService.updatedSingleTodo(this.editingItem.list[this.editingItem.index]);
-
-
-        this.editingItem = null;
-        this.editedItemTitle = '';
-      }
-    },
-
-  },
+  methods: projectsPageMethods,
   mounted() {
     this.fetchExistingProjects();
   },
@@ -520,10 +330,11 @@ ul {
   font-size: 1.5em;
   /* Adjust the font size as needed */
 }
-.edit-desc-input{
+
+.edit-desc-input {
 
   font-size: 1em;
-  width:75%;
+  width: 75%;
   height: 10rem;
 }
 

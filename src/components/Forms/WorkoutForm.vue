@@ -7,7 +7,8 @@
         <label for="existingExercises">Select Existing Exercise:</label>
         <select id="existingExercises" v-model="exercise.selectedExistingExercise">
           <option value="" disabled>Select an existing exercise</option>
-          <option v-for="existingExercise in existingExercises" :key="existingExercise.id" :value="existingExercise">{{ existingExercise }}</option>
+          <option v-for="existingExercise in existingExercises" :key="existingExercise.id" :value="existingExercise">{{
+            existingExercise }}</option>
         </select>
       </div>
 
@@ -24,11 +25,13 @@
         <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="set-container">
           <div class="set-input">
             <label :for="'reps' + exerciseIndex + setIndex">Reps:</label>
-            <input :type="'reps' + exerciseIndex + setIndex" :id="'reps' + exerciseIndex + setIndex" v-model="set.reps" class="small-input" />
+            <input :type="'reps' + exerciseIndex + setIndex" :id="'reps' + exerciseIndex + setIndex" v-model="set.reps"
+              class="small-input" />
           </div>
           <div class="set-input">
             <label :for="'rest' + exerciseIndex + setIndex">Rest (seconds):</label>
-            <input :type="'rest' + exerciseIndex + setIndex" :id="'rest' + exerciseIndex + setIndex" v-model="set.rest" class="small-input" />
+            <input :type="'rest' + exerciseIndex + setIndex" :id="'rest' + exerciseIndex + setIndex" v-model="set.rest"
+              class="small-input" />
           </div>
           <button @click="removeSet(exerciseIndex, setIndex)" class="remove-set-btn">Remove Set</button>
         </div>
@@ -74,7 +77,7 @@ import { apiService } from "@/services/apiService";
 export default {
   data() {
     return {
-      NewExercises:[],
+      NewExercises: [],
       existingExercises: [],
       selectedExistingExercise: "",
       allSubmissions: [], // Initialize allSubmissions as an empty array
@@ -86,17 +89,17 @@ export default {
     };
   },
   methods: {
-    
+
     async submit() {
       try {
         let can_send = true;
         // Check if selectedExistingExercise is not empty and a number
         for (const exercise of this.exercises) {
           console.log(exercise);
-          if(!exercise.selectedExistingExercise){
+          if (!exercise.selectedExistingExercise) {
             can_send = false;
           }
-        } 
+        }
         if (can_send) {
           const formData = {
             category: this.category,
@@ -107,7 +110,7 @@ export default {
           const response = await apiService.submitTime(formData);
 
           console.log('Response from server:', response);
-              this.exercises = [{ selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] }];
+          this.exercises = [{ selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] }];
         } else {
           console.error('Invalid selectedExistingExercise value.');
           console.error(this.selectedExistingExercise);
@@ -138,7 +141,7 @@ export default {
     },
     addExercise() {
       // Add a new exercise with default values
-      this.exercises.push({selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] });
+      this.exercises.push({ selectedExistingExercise: '', newExercise: '', sets: [{ reps: 0, rest: 0 }] });
     },
 
     async createExercise(exerciseIndex) {
@@ -166,29 +169,29 @@ export default {
     },
 
     async resetTable() {
-        try {
-            // Call the resetTable method from your apiService
-            await apiService.resetTable(this.category);
-            console.log('Table reset successful');
+      try {
+        // Call the resetTable method from your apiService
+        await apiService.resetTable(this.category);
+        console.log('Table reset successful');
 
-            // After resetting the table, fetch the updated list of existing projects
-            this.fetchExistingExercises();
-        } catch (error) {
-            console.error('Error resetting table:', error);
-        }
+        // After resetting the table, fetch the updated list of existing projects
+        this.fetchExistingExercises();
+      } catch (error) {
+        console.error('Error resetting table:', error);
+      }
     },
     async getAllSubmissions() {
-        try {
+      try {
 
-          // Fetch all submissions from the server
-          const response = await apiService.getAllSubmissions(this.category);
-          console.log(response);
-          // Update the allSubmissions array with the fetched data
-          this.allSubmissions = response.submissions;
+        // Fetch all submissions from the server
+        const response = await apiService.getAllSubmissions(this.category);
+        console.log(response);
+        // Update the allSubmissions array with the fetched data
+        this.allSubmissions = response.submissions;
 
-        } catch (error) {
-            console.error('Error fetching all submissions:', error);
-        }
+      } catch (error) {
+        console.error('Error fetching all submissions:', error);
+      }
     },
     addSet(exerciseIndex) {
       // Add a new set to the specified exercise
@@ -251,7 +254,8 @@ button {
 
 button {
   cursor: pointer;
-  background-color: #007bff; /* Matching header color */
+  background-color: #007bff;
+  /* Matching header color */
   color: white;
   border: none;
   border-radius: 4px;
@@ -266,9 +270,11 @@ button {
 .large-input {
   width: 60%;
 }
+
 .new-exercise-row {
   display: flex;
-  gap: 0.5rem; /* Adjust the gap as needed */
+  gap: 0.5rem;
+  /* Adjust the gap as needed */
 }
 
 .new-exercise-row input {
@@ -276,7 +282,8 @@ button {
 }
 
 .small-btn {
-  width: 30%; /* Adjust the width as needed */
+  width: 30%;
+  /* Adjust the width as needed */
 }
 
 .add-set-btn,
@@ -300,6 +307,7 @@ button {
   background-color: #007bff;
   color: #fff;
 }
+
 .small-btn,
 .large-btn,
 .submit-btn,
@@ -326,10 +334,10 @@ button {
 .add-exercise-btn:hover,
 
 .get-submissions-btn:hover {
-  background-color: #0056b3; /* Darker shade on hover */
+  background-color: #0056b3;
+  /* Darker shade on hover */
 }
 
 .reset-table-btn {
   background-color: #dc3545;
-}
-</style>
+}</style>

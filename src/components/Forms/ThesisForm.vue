@@ -29,7 +29,8 @@
     <div class="form-section">
       <label for="description">Description:</label>
       <div class="input-section">
-        <textarea id="description" v-model="description" @keydown.enter.prevent="addBulletPoint" rows="4" class="description-input"></textarea>
+        <textarea id="description" v-model="description" @keydown.enter.prevent="addBulletPoint" rows="4"
+          class="description-input"></textarea>
       </div>
     </div>
 
@@ -46,7 +47,8 @@
       <h3>All Submissions:</h3>
       <ul>
         <li v-for="submission in allSubmissions" :key="submission.id">
-          {{ submission.project_name }} - {{ submission.time_spent }} hours - {{ submission.description }} ({{ submission.submission_date }})
+          {{ submission.project_name }} - {{ submission.time_spent }} hours - {{ submission.description }} ({{
+            submission.submission_date }})
         </li>
       </ul>
     </div>
@@ -60,7 +62,7 @@ import { apiService } from "@/services/apiService";
 export default {
   data() {
     return {
-      NewProject:"",
+      NewProject: "",
       timeSpent: 0,
       existingProjects: [],
       selectedExistingProject: "",
@@ -71,7 +73,7 @@ export default {
     };
   },
   methods: {
-    
+
     async submit() {
       try {
         // Check if selectedExistingProject is not empty and a number
@@ -145,16 +147,16 @@ export default {
     },
 
     async resetTable() {
-        try {
-            // Call the resetTable method from your apiService
-            await apiService.resetTable("Projects");
-            console.log('Table reset successful');
+      try {
+        // Call the resetTable method from your apiService
+        await apiService.resetTable("Projects");
+        console.log('Table reset successful');
 
-            // After resetting the table, fetch the updated list of existing projects
-            this.fetchExistingProjects();
-        } catch (error) {
-            console.error('Error resetting table:', error);
-        }
+        // After resetting the table, fetch the updated list of existing projects
+        this.fetchExistingProjects();
+      } catch (error) {
+        console.error('Error resetting table:', error);
+      }
     },
     addBulletPoint() {
       // Check if the description is empty or doesn't start with a bullet point
@@ -166,17 +168,17 @@ export default {
       }
     },
     async getAllSubmissions() {
-        try {
+      try {
 
-          // Fetch all submissions from the server
-          const response = await apiService.getAllSubmissions(this.category);
-          console.log(response);
-          // Update the allSubmissions array with the fetched data
-          this.allSubmissions = response.submissions;
+        // Fetch all submissions from the server
+        const response = await apiService.getAllSubmissions(this.category);
+        console.log(response);
+        // Update the allSubmissions array with the fetched data
+        this.allSubmissions = response.submissions;
 
-        } catch (error) {
-            console.error('Error fetching all submissions:', error);
-        }
+      } catch (error) {
+        console.error('Error fetching all submissions:', error);
+      }
     },
   },
   mounted() {
@@ -242,7 +244,8 @@ textarea {
 
 button {
   cursor: pointer;
-  background-color: #007bff; /* Matching header color */
+  background-color: #007bff;
+  /* Matching header color */
   color: white;
   border: none;
   border-radius: 4px;
@@ -259,7 +262,8 @@ button {
 }
 
 .description-input {
-  width: calc(100% - 2rem); /* Adjusted width to prevent overflow */
+  width: calc(100% - 2rem);
+  /* Adjusted width to prevent overflow */
 }
 
 .small-btn {
@@ -293,7 +297,8 @@ button {
 .small-btn:hover,
 .submit-btn:hover,
 .get-submissions-btn:hover {
-  background-color: #0056b3; /* Darker shade on hover */
+  background-color: #0056b3;
+  /* Darker shade on hover */
 
 }
 </style>

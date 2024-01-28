@@ -1,24 +1,24 @@
 <!-- src/components/MyForm.vue -->
 
 <template>
-  <div>
-      <label for="category">Category:</label>
-      <select id="category" v-model="selectedCategory" @change="handleCategoryChange">
-        <option value="" disabled>Select a category</option>
-        <option value="thesis">Thesis</option>
-        <option value="workout">Workout</option>
-        <option value="reading">Reading</option>
-        <option value="passion_project">Passion Projects</option>
-      </select>
-      <br>
-      <br>
-      
-      <ProjectForm v-if="showProjects" />
-      <BookForm v-if="showBooks" />
-      <ThesisForm v-if="showThesis" />
-      <WorkoutForm v-if="showWorkout" />
+    <div>
+        <label for="category">Category:</label>
+        <select id="category" v-model="selectedCategory" @change="handleCategoryChange">
+            <option value="" disabled>Select a category</option>
+            <option value="thesis">Thesis</option>
+            <option value="workout">Workout</option>
+            <option value="reading">Reading</option>
+            <option value="passion_project">Passion Projects</option>
+        </select>
+        <br>
+        <br>
 
-  </div>
+        <ProjectForm v-if="showProjects" />
+        <BookForm v-if="showBooks" />
+        <ThesisForm v-if="showThesis" />
+        <WorkoutForm v-if="showWorkout" />
+
+    </div>
 </template>
 
 <script>
@@ -37,8 +37,8 @@ export default {
         };
     },
     methods: {
-        
-        
+
+
         handleCategoryChange() {
             // Show/hide the project-related fields based on the selected category
             this.showProjects = this.selectedCategory === "passion_project";
@@ -48,7 +48,7 @@ export default {
 
         },
     },
-    components: { 
+    components: {
         ProjectForm,
         BookForm,
         ThesisForm,

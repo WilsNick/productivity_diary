@@ -41,13 +41,14 @@
     <div class="form-section" style="text-align: center; margin-top: 1rem;">
       <button @click="getAllSubmissions" class="get-submissions-btn">Get All Submissions</button>
     </div>
-  
+
 
     <div v-if="allSubmissions && allSubmissions.length > 0" class="form-section">
       <h3>All Submissions:</h3>
       <ul>
         <li v-for="submission in allSubmissions" :key="submission.id">
-          {{ submission.project_name }} - {{ submission.time_spent }} pages - current page {{ submission.current_page }} - ({{ submission.submission_date }})
+          {{ submission.project_name }} - {{ submission.time_spent }} pages - current page {{ submission.current_page }} -
+          ({{ submission.submission_date }})
         </li>
       </ul>
     </div>
@@ -166,13 +167,15 @@ export default {
 .form-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem; /* Increased vertical space */
+  gap: 1.5rem;
+  /* Increased vertical space */
   margin-bottom: 1.5rem;
 }
 
 .form-column {
   flex: 1 1 100%;
-  max-width: calc(50% - 0.75rem); /* Widened columns */
+  max-width: calc(50% - 0.75rem);
+  /* Widened columns */
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -184,11 +187,13 @@ export default {
 }
 
 .form-section {
-  margin-bottom: 1.5rem; /* Increased vertical space */
+  margin-bottom: 1.5rem;
+  /* Increased vertical space */
 }
 
 .label-section {
-  margin-top: 1rem; /* Increased spacing between label and input field */
+  margin-top: 1rem;
+  /* Increased spacing between label and input field */
 }
 
 label {
@@ -197,7 +202,8 @@ label {
 
 .input-section {
   width: 100%;
-  margin-top: 0.5rem; /* Adjusted spacing between label and input field */
+  margin-top: 0.5rem;
+  /* Adjusted spacing between label and input field */
 }
 
 input,
@@ -211,7 +217,8 @@ button {
 
 button {
   cursor: pointer;
-  background-color: #007bff; /* Matching header color */
+  background-color: #007bff;
+  /* Matching header color */
   color: white;
   border: none;
   border-radius: 4px;
@@ -220,40 +227,50 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3; /* Darker shade on hover */
+  background-color: #0056b3;
+  /* Darker shade on hover */
 }
 
 .small-input {
-  width: 50%; /* Reduced width for smaller inputs */
+  width: 50%;
+  /* Reduced width for smaller inputs */
 }
 
 .large-input {
-  width: 75%; /* Increased width for larger input */
+  width: 75%;
+  /* Increased width for larger input */
 }
 
 .small-btn {
-  width: 30%; /* Reduced width for smaller button */
+  width: 30%;
+  /* Reduced width for smaller button */
 }
 
 .submit-btn,
 .get-submissions-btn,
 .reset-table-btn {
-  width: 48%; /* Reduced width for all buttons */
-  margin: 0.5%; /* Adjusted margin for spacing */
-  display: inline-block; /* Display buttons in the same line */
+  width: 48%;
+  /* Reduced width for all buttons */
+  margin: 0.5%;
+  /* Adjusted margin for spacing */
+  display: inline-block;
+  /* Display buttons in the same line */
 }
 
 /* Adjusted colors */
 .submit-btn {
-  background-color: #007bff; /* Matching header color */
+  background-color: #007bff;
+  /* Matching header color */
 }
 
 .get-submissions-btn {
-  background-color: #007bff; /* Matching header color */
+  background-color: #007bff;
+  /* Matching header color */
 }
 
 .reset-table-btn {
-  background-color: #dc3545; /* Red color for Reset Table */
+  background-color: #dc3545;
+  /* Red color for Reset Table */
 }
 
 ul {
@@ -263,11 +280,11 @@ ul {
 }
 
 li {
-  margin-bottom: 1rem; /* Increased vertical space */
+  margin-bottom: 1rem;
+  /* Increased vertical space */
   background-color: #fff;
   padding: 1rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-</style>
+}</style>

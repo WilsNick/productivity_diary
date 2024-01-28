@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
 from datetime import datetime
-from sqlalchemy import func
 
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 
 app = Flask(__name__)
 CORS(app)
@@ -11,18 +11,21 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://nick:nick@localhost:5432/diary'
 db = SQLAlchemy(app)
 
+
 class Exercise(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255), unique=True ,nullable=False)
+    title = db.Column(db.String(255), unique=True, nullable=False)
     best_rep = db.Column(db.Integer, default=0)
     last_rep = db.Column(db.Integer, default=0)
     last_rest = db.Column(db.Integer, default=0)
     sets = db.relationship('Set', backref='exercise', lazy=True)
 
+
 class TimeSubmissionWorkout(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     submission_date = db.Column(db.DateTime, default=datetime.utcnow)
     sets = db.relationship('Set', backref='workout', lazy=True)
+
 
 class Set(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,11 +42,14 @@ class Project(db.Model):
     total_time_spent = db.Column(db.Integer, default=0)
     todos = db.relationship('Todo', backref='project', lazy=True)
 
+
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(50), default='Todo')  # 'Todo', 'In Progress', 'Done'
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+
+
 class Thesis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), unique=True, nullable=False)
@@ -53,12 +59,14 @@ class Books(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), unique=True, nullable=False)
 
+
 class TimeSubmissionProject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    project_name = db.Column(db.String(255), db.ForeignKey('project.title',  onupdate='CASCADE'), nullable=False)
+    project_name = db.Column(db.String(255), db.ForeignKey('project.title', onupdate='CASCADE'), nullable=False)
     time_spent = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=False)
     submission_date = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class TimeSubmissionBook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,6 +75,7 @@ class TimeSubmissionBook(db.Model):
     current_page = db.Column(db.Float, nullable=False)
     submission_date = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class TimeSubmissionThesis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_name = db.Column(db.String(255), db.ForeignKey('project.title'), nullable=False)
@@ -74,8 +83,10 @@ class TimeSubmissionThesis(db.Model):
     description = db.Column(db.Text, nullable=False)
     submission_date = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 with app.app_context():
     db.create_all()
+
 
 @app.route('/add-project', methods=['POST'])
 def add_project():
@@ -108,7 +119,7 @@ def add_project():
 
             existing_project = Books.query.filter_by(title=project_title).first()
 
-            if existing_project not in  [None or "" or " "]:
+            if existing_project not in [None or "" or " "]:
                 new_project = Books(title=project_title)
                 db.session.add(new_project)
                 db.session.commit()
@@ -130,11 +141,12 @@ def add_project():
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/get-existing-projects', methods=['GET'])
 def get_existing_projects():
     try:
         category = request.args.get('category')
-        project_list =[]
+        project_list = []
         if category == "Projects":
             projects = Project.query.all()
             project_list = [{'id': project.id, 'title': project.title} for project in projects]
@@ -153,6 +165,7 @@ def get_existing_projects():
     except Exception as e:
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/reset-table', methods=['GET'])
 def reset_table():
@@ -185,6 +198,7 @@ def reset_table():
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/submit-time', methods=['POST'])
 def submit_time():
     try:
@@ -192,14 +206,14 @@ def submit_time():
 
         category = data.get('category')
 
-
         if category == "Projects":
             description = data.get('description')
             project_name = data.get('project_name')
             time_spent = data.get('time_spent')
 
             # Create a new TimeSubmission object and add it to the database
-            new_time_submission = TimeSubmissionProject(project_name=project_name, time_spent=time_spent, description=description)
+            new_time_submission = TimeSubmissionProject(project_name=project_name, time_spent=time_spent,
+                                                        description=description)
         elif category == "Thesis":
             description = data.get('description')
             project_name = data.get('project_name')
@@ -207,14 +221,15 @@ def submit_time():
 
             # Create a new TimeSubmission object and add it to the database
             new_time_submission = TimeSubmissionThesis(project_name=project_name, time_spent=time_spent,
-                                                        description=description)
+                                                       description=description)
 
         elif category == "Books":
 
             current_page = data.get('current_page')
             project_name = data.get('project_name')
             time_spent = data.get('time_spent')
-            new_time_submission = TimeSubmissionBook(book_name = project_name, time_spent=time_spent, current_page=current_page)
+            new_time_submission = TimeSubmissionBook(book_name=project_name, time_spent=time_spent,
+                                                     current_page=current_page)
         elif category == "Workouts":
             exercises = data.get('exercises')
             with db.session.no_autoflush:
@@ -236,7 +251,6 @@ def submit_time():
                             exercise.last_rep = set_data.get('reps')
                             exercise.last_rest = set_data.get('rest')
 
-
         db.session.add(new_time_submission)
         db.session.commit()
 
@@ -245,6 +259,7 @@ def submit_time():
     except Exception as e:
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
+
 
 # Add a new route to fetch all data from the TimeSubmission table
 @app.route('/get-all-submissions', methods=['GET'])
@@ -318,13 +333,12 @@ def get_all_submissions():
 
                 submission_list.append(workout_data)
 
-
-
         return jsonify({'submissions': submission_list})
 
     except Exception as e:
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/update-project', methods=['PUT'])
 def update_project():
@@ -333,7 +347,6 @@ def update_project():
         project_id = data.get('id')
         title = data.get('title')
         description = data.get('description')
-
 
         project = Project.query.get(project_id)
         project.title = title
@@ -349,6 +362,7 @@ def update_project():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/update-todo', methods=['PUT'])
 def update_todo():
     try:
@@ -356,7 +370,7 @@ def update_todo():
         data = request.get_json()
         items = data.get('items')
         project_id = data.get('project_id')
-        #remove all the todos linked with the project id
+        # remove all the todos linked with the project id
 
         Todo.query.filter_by(project_id=project_id).delete()
         db.session.commit()
@@ -374,6 +388,7 @@ def update_todo():
         return jsonify({'message': 'Todo updated successfully'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/update-single-todo', methods=['PUT'])
 def update_single_todo():
@@ -393,6 +408,7 @@ def update_single_todo():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/add-todo', methods=['POST'])
 def add_todo():
     try:
@@ -405,19 +421,19 @@ def add_todo():
         db.session.add(todo)
         db.session.commit()
 
-
         return jsonify({'item': todo.id,
-                         "project_id": project_id,
+                        "project_id": project_id,
                         "status": status,
                         "task": task})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
 @app.route('/get-project-info', methods=['GET'])
 def get_project_info():
     try:
         project = request.args.get('projectId')
         # get description
-
 
         project_inst = Project.query.get(project)
         desc = project_inst.description
@@ -442,6 +458,7 @@ def get_project_info():
         print("Error:", str(e))
         return jsonify({'error': str(e)}), 500
 
+
 # API endpoint to get the sum of time_spent for a given project_title
 @app.route('/sum_time_spent', methods=['GET'])
 def get_sum_time_spent():
@@ -449,7 +466,8 @@ def get_sum_time_spent():
         project_title = request.args.get('project_title')
 
         # Query the TimeSubmissionProject table for entries with the given project_title
-        total_time_spent = db.session.query(func.sum(TimeSubmissionProject.time_spent)).filter_by(project_name=project_title).scalar()
+        total_time_spent = db.session.query(func.sum(TimeSubmissionProject.time_spent)).filter_by(
+            project_name=project_title).scalar()
         print(total_time_spent)
         # Return the result
         return jsonify({'total_time_spent': total_time_spent})
@@ -459,4 +477,4 @@ def get_sum_time_spent():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, )
+    app.run(debug=True)
