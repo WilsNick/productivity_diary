@@ -33,7 +33,7 @@
           <textarea v-if="isEditing" v-model="editedProject.description"   class="edit-desc-input"></textarea>
         </p>
         <p :class="{ 'editing': isEditing }"><strong>Total Hours Spent:</strong>
-          <br />{{ selectedProject.totalTimeSpent }} hours
+          <br />{{ selectedProject.totalTimeSpent || 0 }} hours
         </p>
 
 
