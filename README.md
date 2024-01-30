@@ -29,8 +29,8 @@ This is still a work in progress.
 
 1. Clone the repository:
 
-```bash
-git clone https://github.com/your-username/your-repo.git
+```
+git clone https://github.com/WilsNick/productivity_diary.git
 cd your-repo
 ```
 2. Install dependencies:
