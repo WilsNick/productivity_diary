@@ -31,7 +31,7 @@ This is still a work in progress.
 
 ```
 git clone https://github.com/WilsNick/productivity_diary.git
-cd your-repo
+cd productivity_diary
 ```
 2. Install dependencies:
 ```
